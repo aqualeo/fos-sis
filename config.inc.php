@@ -5,25 +5,21 @@
  * @package RosarioSIS
  */
 
+// Set working directory to web root
+chdir(__DIR__);
+$RosarioPath = __DIR__ . '/';
+
 // Database type
 $DatabaseType = 'postgresql';
 
-// Database server hostname
+// Database connection settings
 $DatabaseServer = getenv('PGHOST') ?: ($_ENV['PGHOST'] ?? 'localhost');
-
-// Database port
 $DatabasePort = getenv('PGPORT') ?: ($_ENV['PGPORT'] ?? '5432');
-
-// Database username
 $DatabaseUsername = getenv('PGUSER') ?: ($_ENV['PGUSER'] ?? 'postgres');
-
-// Database password
 $DatabasePassword = getenv('PGPASSWORD') ?: ($_ENV['PGPASSWORD'] ?? '');
-
-// Database name
 $DatabaseName = getenv('PGDATABASE') ?: ($_ENV['PGDATABASE'] ?? 'railway');
 
-// Path to wkhtmltopdf (empty string renders reports in HTML)
+// Path to wkhtmltopdf (leave empty to render in HTML)
 $wkhtmltopdfPath = '';
 
 // Default school year
