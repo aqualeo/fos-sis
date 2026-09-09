@@ -197,7 +197,10 @@ function DBEscapeIdentifier( $identifier )
 		return '`' . str_replace( '`', '``', $identifier ) . '`';
 	}
 
-	return $db_connection ? pg_escape_identifier( $db_connection, $identifier ) : '"' . str_replace( '"', '""', $identifier ) . '"';
+	// Lowercase the identifier for PostgreSQL to match the schema
+	$identifier_lower = strtolower( $identifier );
+
+	return $db_connection ? pg_escape_identifier( $db_connection, $identifier_lower ) : '"' . str_replace( '"', '""', $identifier_lower ) . '"';
 }
 
 /**
