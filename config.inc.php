@@ -19,6 +19,9 @@ $DatabaseType = 'postgresql';
 // Database server hostname: use localhost if on same server.
 $DatabaseServer = getenv('PGHOST');
 
+// Database port
+$DatabasePort = getenv('PGPORT') ?: '5432';
+
 // Database username.
 $DatabaseUsername = getenv('PGUSER');
 
