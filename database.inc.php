@@ -197,7 +197,7 @@ function DBEscapeIdentifier( $identifier )
 		return '`' . str_replace( '`', '``', $identifier ) . '`';
 	}
 
-	// Lowercase the identifier for PostgreSQL to match the schema
+	// Lowercase identifier for PostgreSQL compatibility
 	$identifier_lower = strtolower( $identifier );
 
 	return $db_connection ? pg_escape_identifier( $db_connection, $identifier_lower ) : '"' . str_replace( '"', '""', $identifier_lower ) . '"';
@@ -225,6 +225,66 @@ function db_fetch_row( $result )
 	}
 
 	return is_array( $return ) ? array_change_key_case( $return, CASE_UPPER ) : $return;
+}
+
+/**
+ * Return SQL query results as a comma-separated list
+ */
+function DBSQLCommaSeparatedResult( $sql, $delimiter = ',' )
+{
+	$result = DBQuery( $sql );
+
+	$list = [];
+
+	if ( $result )
+	{
+		while ( $row = db_fetch_row( $result ) )
+		{
+			$val = reset( $row );
+			if ( $val !== false && $val !== null && $val !== '' )
+			{
+				$list[] = is_numeric( $val ) ? $val : "'" . DBEscapeString( $val ) . "'";
+			}
+		}
+	}
+
+	if ( empty( $list ) )
+	{
+		return '0';
+	}
+
+	return implode( $delimiter, $list );
+}
+
+/**
+ * SQL CASE statement helper
+ */
+function db_case( $when_array, $else = "''" )
+{
+	$sql = "CASE ";
+	foreach ( $when_array as $when => $then )
+	{
+		$sql .= "WHEN " . $when . " THEN " . $then . " ";
+	}
+	if ( $else !== '' )
+	{
+		$sql .= "ELSE " . $else . " ";
+	}
+	$sql .= "END";
+	return $sql;
+}
+
+/**
+ * SQL CONCAT helper
+ */
+function db_concat( $array )
+{
+	global $DatabaseType;
+	if ( $DatabaseType === 'mysql' )
+	{
+		return "CONCAT(" . implode( ", ", $array ) . ")";
+	}
+	return implode( " || ", $array );
 }
 
 /**
