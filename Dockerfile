@@ -49,3 +49,7 @@ EXPOSE 80
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["apache2-foreground"]
+
+# Fix MPM conflict by disabling event/worker and enabling prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_worker.load \
+ && a2enmod mpm_prefork rewrite
