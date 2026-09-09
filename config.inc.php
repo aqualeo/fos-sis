@@ -2,90 +2,32 @@
 /**
  * The base configurations of RosarioSIS
  *
- * You can find more information in the INSTALL.md file
- *
  * @package RosarioSIS
  */
 
-/**
- * Database Settings
- *
- * You can get this info from your web host
- */
+// Set working directory to web root
+chdir(__DIR__);
+$RosarioPath = __DIR__ . '/';
 
-// Database type: postgresql or mysql.
+// Database type
 $DatabaseType = 'postgresql';
 
-// Database server hostname: use localhost if on same server.
-$DatabaseServer = getenv('PGHOST');
+// Database connection settings
+$DatabaseServer = getenv('PGHOST') ?: ($_ENV['PGHOST'] ?? 'localhost');
+$DatabasePort = getenv('PGPORT') ?: ($_ENV['PGPORT'] ?? '5432');
+$DatabaseUsername = getenv('PGUSER') ?: ($_ENV['PGUSER'] ?? 'postgres');
+$DatabasePassword = getenv('PGPASSWORD') ?: ($_ENV['PGPASSWORD'] ?? '');
+$DatabaseName = getenv('PGDATABASE') ?: ($_ENV['PGDATABASE'] ?? 'railway');
 
-// Database username.
-$DatabaseUsername = getenv('PGUSER');
-
-// Database password.
-$DatabasePassword = getenv('PGPASSWORD');
-
-// Database name.
-$DatabaseName = getenv('PGDATABASE');
-
-/**
- * Full path to wkhtmltopdf binary file
- *
- * An empty string means wkhtmltopdf will not be called
- * and reports will be rendered in HTML instead of PDF
- *
- * @link http://wkhtmltopdf.org
- *
- * @example /usr/local/bin/wkhtmltopdf
- * @example C:/Progra~1/wkhtmltopdf/bin/wkhtmltopdf.exe
- */
+// Path to wkhtmltopdf (leave empty to render in HTML)
 $wkhtmltopdfPath = '';
 
-
-/**
- * Default school year
- *
- * Do NOT change during installation
- * Change after rollover
- * Should match the database to be able to login
- *
- * @see School > Rollover program
- */
+// Default school year
 $DefaultSyear = '2026';
 
-
-/**
- * Email address to receive notifications
- * - new administrator account
- * - new student / user account
- * - new registration
- *
- * Leave empty to not receive email notifications
- */
+// Notification & Error addresses
 $RosarioNotifyAddress = 'fos@aqualeo.co';
-
-
-/**
- * Email address to receive errors
- * - PHP fatal error
- * - database SQL error
- * - hacking attempts
- * - CSP violation reports
- *
- * Leave empty to not receive errors
- */
 $RosarioErrorsAddress = 'devops@aqualeo.co';
 
-
-/**
- * Locales
- *
- * Add other languages you want to support here
- *
- * @see locale/ folder
- *
- * For American, French and Spanish:
- *
- * @example [ 'en_US.utf8', 'fr_FR.utf8', 'es_ES.utf8' ];
- */
+// Locales
 $RosarioLocales = [ 'en_GB.utf8' ];
