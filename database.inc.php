@@ -7,16 +7,6 @@
 
 /**
  * Establish DB connection
- *
- * @global string $DatabaseServer   Database server hostname
- * @global string $DatabaseUsername Database username
- * @global string $DatabasePassword Database password
- * @global string $DatabaseName     Database name
- * @global string $DatabasePort     Database port
- * @global string $DatabaseType     Database type: mysql or postgresql
- *
- * @param  bool $show_error Show error and die. Optional, defaults to true.
- * @return mixed PostgreSQL or MySQL connection resource
  */
 function db_start( $show_error = true )
 {
@@ -27,6 +17,11 @@ function db_start( $show_error = true )
 		$DatabasePort,
 		$DatabaseType;
 
+	if ( empty( $DatabaseType ) )
+	{
+		$DatabaseType = 'postgresql';
+	}
+
 	if ( $DatabaseType === 'mysql' )
 	{
 		mysqli_report( MYSQLI_REPORT_OFF );
@@ -36,7 +31,7 @@ function db_start( $show_error = true )
 			$DatabaseUsername,
 			$DatabasePassword,
 			$DatabaseName,
-			$DatabasePort
+			$DatabasePort ?: 3306
 		);
 	}
 	else
@@ -161,6 +156,51 @@ function DBQuery( $sql )
 }
 
 /**
+ * Escape String for SQL queries
+ */
+function DBEscapeString( $str )
+{
+	global $db_connection, $DatabaseType;
+
+	if ( ! isset( $db_connection ) || ! $db_connection )
+	{
+		$db_connection = db_start( false );
+	}
+
+	if ( ! is_string( $str ) )
+	{
+		return $str;
+	}
+
+	if ( $DatabaseType === 'mysql' )
+	{
+		return $db_connection ? mysqli_real_escape_string( $db_connection, $str ) : addslashes( $str );
+	}
+
+	return $db_connection ? pg_escape_string( $db_connection, $str ) : addslashes( $str );
+}
+
+/**
+ * Escape SQL Identifier (table, column names)
+ */
+function DBEscapeIdentifier( $identifier )
+{
+	global $db_connection, $DatabaseType;
+
+	if ( ! isset( $db_connection ) || ! $db_connection )
+	{
+		$db_connection = db_start( false );
+	}
+
+	if ( $DatabaseType === 'mysql' )
+	{
+		return '`' . str_replace( '`', '``', $identifier ) . '`';
+	}
+
+	return $db_connection ? pg_escape_identifier( $db_connection, $identifier ) : '"' . str_replace( '"', '""', $identifier ) . '"';
+}
+
+/**
  * Return next row
  */
 function db_fetch_row( $result )
@@ -185,9 +225,59 @@ function db_fetch_row( $result )
 }
 
 /**
+ * Sequence next value
+ */
+function db_seq_nextval( $seqname )
+{
+	return "nextval('" . $seqname . "')";
+}
+
+function DBSeqNextval( $seqname )
+{
+	return db_seq_nextval( $seqname );
+}
+
+/**
+ * Last Insert ID
+ */
+function DBLastInsertID()
+{
+	global $db_connection, $DatabaseType;
+
+	if ( $DatabaseType === 'mysql' )
+	{
+		return mysqli_insert_id( $db_connection );
+	}
+
+	$res = db_query( "SELECT LASTVAL() AS id" );
+	$row = db_fetch_row( $res );
+	return $row['ID'] ?? 0;
+}
+
+/**
+ * Transactions
+ */
+function db_trans_start( $connection = null )
+{
+	global $db_connection;
+	$conn = $connection ?: $db_connection ?: db_start();
+	db_query( "BEGIN" );
+}
+
+function db_trans_commit( $connection = null )
+{
+	db_query( "COMMIT" );
+}
+
+function db_trans_rollback( $connection = null )
+{
+	db_query( "ROLLBACK" );
+}
+
+/**
  * Error display helper
  */
-function db_show_error( $sql, $msg, $error )
+function db_show_error( $sql, $msg, $error = '' )
 {
 	echo '<div style="font-family:sans-serif; background:#fee; border:1px solid #f99; padding:15px; margin:20px; border-radius:4px;">';
 	echo '<h3 style="color:#c00; margin-top:0;">Database Error</h3>';
